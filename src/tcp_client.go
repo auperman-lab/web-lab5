@@ -1,11 +1,13 @@
 package src
 
 import (
+	"bufio"
 	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
 	"net/url"
+	"strings"
 )
 
 func Fetch(urlStr string) (string, error) {
@@ -47,6 +49,11 @@ func Fetch(urlStr string) (string, error) {
 		return "", fmt.Errorf("error reading response: %v", err)
 	}
 
+	redirectURL := checkRedirect(string(response))
+	if redirectURL != "" {
+		fmt.Println("Redirecting to:", redirectURL)
+		return Fetch(redirectURL) // Recursively fetch the new location
+	}
 	return string(response), nil
 
 }
@@ -70,4 +77,25 @@ func fetchHttp(host string) (net.Conn, error) {
 	fmt.Printf("\n\nConnection via HTTP succesful\n\n")
 
 	return conn, nil
+}
+
+func checkRedirect(response string) string {
+	scanner := bufio.NewScanner(strings.NewReader(response))
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.HasPrefix(line, "HTTP/1.1 3") || strings.HasPrefix(line, "HTTP/1.0 3") {
+			fmt.Println("Redirect detected:", line)
+		}
+
+		if strings.HasPrefix(line, "Location: ") {
+			redirectURL := strings.TrimSpace(strings.TrimPrefix(line, "Location: "))
+			return redirectURL
+		}
+
+		if line == "" {
+			break
+		}
+	}
+	return ""
 }
