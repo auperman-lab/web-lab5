@@ -20,9 +20,13 @@ func main() {
 		fmt.Printf("\t -h: Show this help\n")
 	}
 	if *u != "" {
-		resp, err := src.Fetch(*u)
+		body, err := src.Fetch(*u)
 		if err != nil {
 			fmt.Printf("Invalid URL page \n Error: %s\n", err.Error())
+		}
+		resp, err := src.ParseHtml(body)
+		if err != nil {
+			fmt.Printf("Unable to parse URL page \n Error: %s\n", err.Error())
 		}
 		fmt.Println(resp)
 	}
