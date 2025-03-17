@@ -7,9 +7,9 @@ import (
 )
 
 func main() {
-	u := flag.String("u", "https://www.google.com/", "Insert a http address")
+	u := flag.String("u", "", "Insert a http address")
 	h := flag.Bool("h", false, "Show this help")
-	s := flag.String("s", "Hello World", "Search Something")
+	s := flag.String("s", "", "Search Something")
 
 	flag.Parse()
 
@@ -31,6 +31,14 @@ func main() {
 		fmt.Println(resp)
 	}
 	if *s != "" {
-		fmt.Println(*s)
+		result, err := src.ScrapeDuckDuckGo(*s)
+		if err != nil {
+			fmt.Println("Error fetching results:", err)
+			return
+		}
+		for _, link := range result {
+			fmt.Println(link)
+		}
+
 	}
 }

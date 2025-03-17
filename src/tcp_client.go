@@ -1,9 +1,9 @@
 package src
 
 import (
-	"bufio"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 )
@@ -42,25 +42,13 @@ func Fetch(urlStr string) (string, error) {
 		return "", err
 	}
 
-	var response string
-	scanner := bufio.NewScanner(conn)
-	headersDone := false
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			headersDone = true
-			continue
-		}
-		if headersDone {
-			response += line + "\n"
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
+	response, err := io.ReadAll(conn)
+	if err != nil {
 		return "", fmt.Errorf("error reading response: %v", err)
 	}
 
-	return response, nil
+	return string(response), nil
+
 }
 
 func fetchHttps(host string) (*tls.Conn, error) {
