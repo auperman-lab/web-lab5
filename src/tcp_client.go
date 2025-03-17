@@ -22,39 +22,53 @@ func Fetch(urlStr string) (string, error) {
 		path = "/"
 	}
 
-	var conn net.Conn
-	conn, err = fetchHttps(host)
+	if !(checkCache(host, path)) {
+		var conn net.Conn
+		conn, err = fetchHttps(host)
 
-	if err != nil {
-		conn, err = fetchHttp(host)
 		if err != nil {
-			return "", fmt.Errorf("failed to connect to %s (HTTPS/HTTP): %v", urlStr, err)
+			conn, err = fetchHttp(host)
+			if err != nil {
+				return "", fmt.Errorf("failed to connect to %s (HTTPS/HTTP): %v", urlStr, err)
+			}
 		}
+		defer conn.Close()
+
+		request := fmt.Sprintf(
+			"GET %s HTTP/1.1\r\n"+
+				"Host: %s\r\n"+
+				"Connection: close\r\n"+
+				"User-Agent: Mozilla/5.0\r\n\r\n", path, host)
+
+		_, err = conn.Write([]byte(request))
+		if err != nil {
+			return "", err
+		}
+
+		response, err := io.ReadAll(conn)
+		if err != nil {
+			return "", fmt.Errorf("error reading response: %v", err)
+		}
+
+		redirectURL := checkRedirect(string(response))
+		if redirectURL != "" {
+			fmt.Println("Redirecting to:", redirectURL)
+			return Fetch(redirectURL) // Recursively fetch the new location
+		}
+
+		err = addToCache(host, path, string(response))
+		if err != nil {
+			return "", err
+		}
+
+		return string(response), nil
 	}
-	defer conn.Close()
-
-	request := fmt.Sprintf(
-		"GET %s HTTP/1.1\r\n"+
-			"Host: %s\r\n"+
-			"Connection: close\r\n"+
-			"User-Agent: Mozilla/5.0\r\n\r\n", path, host)
-
-	_, err = conn.Write([]byte(request))
+	fmt.Println("\nThis website is cached!\n")
+	response, err := getFromCache(host, path)
 	if err != nil {
 		return "", err
 	}
-
-	response, err := io.ReadAll(conn)
-	if err != nil {
-		return "", fmt.Errorf("error reading response: %v", err)
-	}
-
-	redirectURL := checkRedirect(string(response))
-	if redirectURL != "" {
-		fmt.Println("Redirecting to:", redirectURL)
-		return Fetch(redirectURL) // Recursively fetch the new location
-	}
-	return string(response), nil
+	return response, nil
 
 }
 

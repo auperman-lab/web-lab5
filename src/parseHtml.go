@@ -20,12 +20,6 @@ func ParseHtml(body string) (string, error) {
 
 	fmt.Println(cleanHtml)
 
-	err = writeToFile("cleaned_output.html", cleanHtml)
-	if err != nil {
-		fmt.Println("Error writing to file:", err)
-		return "", err
-	}
-
 	return cleanHtml, nil
 
 }
