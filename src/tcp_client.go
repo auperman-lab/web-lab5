@@ -52,8 +52,9 @@ func Fetch(urlStr string) (string, error) {
 
 		redirectURL := checkRedirect(string(response))
 		if redirectURL != "" {
-			fmt.Println("Redirecting to:", redirectURL)
-			return Fetch(redirectURL) // Recursively fetch the new location
+			fmt.Println("Redirecting to:", "https://"+host+redirectURL)
+
+			return Fetch("https://" + host + redirectURL) // Recursively fetch the new location
 		}
 
 		err = addToCache(host, path, string(response))

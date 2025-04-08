@@ -13,14 +13,14 @@ func ParseHtml(body string) (string, error) {
 		return "", err
 	}
 
-	tagsToRemove := []string{"script", "style", "meta", "link"}
-	cleanHtml := ""
+	//tagsToRemove := []string{"script", "style", "meta", "link"}
+	//cleanHtml := ""
 
-	cleanHtml += removeTags(doc.FirstChild, tagsToRemove)
+	//cleanHtml += removeTags(doc.FirstChild, tagsToRemove)
 
-	fmt.Println(cleanHtml)
+	printText(doc)
 
-	return cleanHtml, nil
+	return "", nil
 
 }
 
@@ -66,4 +66,16 @@ func removeTags(n *html.Node, tags []string) string {
 	}
 
 	return sb.String()
+}
+
+func printText(n *html.Node) {
+	if n.Type == html.TextNode {
+		text := strings.TrimSpace(n.Data)
+		if text != "" {
+			fmt.Println(text)
+		}
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		printText(c)
+	}
 }

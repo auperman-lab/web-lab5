@@ -24,12 +24,12 @@ func main() {
 		if err != nil {
 			fmt.Printf("Invalid URL page \n Error: %s\n", err.Error())
 		}
-		fmt.Println(body)
-		//resp, err := src.ParseHtml(body)
-		//if err != nil {
-		//	fmt.Printf("Unable to parse URL page \n Error: %s\n", err.Error())
-		//}
-		//fmt.Println(resp)
+		//fmt.Println(body)
+		resp, err := src.ParseHtml(body)
+		if err != nil {
+			fmt.Printf("Unable to parse URL page \n Error: %s\n", err.Error())
+		}
+		fmt.Println(resp)
 	}
 	if *s != "" {
 		result, err := src.ScrapeDuckDuckGo(*s)
